@@ -1,0 +1,10 @@
+services:
+    _defaults:
+        autowire: true
+        public: false
+
+    Biig\Component\Elasticsearch\Mapping\IndexBuilder: ~
+
+    Biig\Component\Elasticsearch\Command\IndexBuilderCommand:
+        tags:
+            - { name: 'console.command' }

@@ -1,0 +1,29 @@
+{
+    "name": "biig/elasticsearch",
+    "description": "Simple tools to interact with you elasticsearch infrastructure.",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Biig\\Component\\Elasticsearch\\": "./src/"
+        }
+    },
+    "require": {
+        "symfony/console": "^4.0",
+        "symfony/options-resolver": "^4.0",
+        "ruflin/elastica": "^6.0",
+        "symfony/finder": "^4.0",
+        "symfony/yaml": "^4.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.0",
+        "symfony/symfony": "^4.0",
+        "friendsofphp/php-cs-fixer": "^2.10"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "BiiG",
+            "homepage": "http://www.biig.fr"
+        }
+    ]
+}

@@ -1,0 +1,11 @@
+settings:
+    index:
+        number_of_shards: 1
+        number_of_replicas: 0
+mappings:
+    articles:
+        properties:
+            # This is a test with special yaml information
+            title: &en_text
+                type: text
+                analyzer: english
