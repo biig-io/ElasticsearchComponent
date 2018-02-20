@@ -2,6 +2,8 @@
 
 namespace Biig\Component\Elasticsearch\Integration\Symfony\DependencyInjection;
 
+use Biig\Component\Elasticsearch\Indexation\Hydrator\HydratorFactory;
+use Biig\Component\Elasticsearch\Indexation\IndexInterface;
 use Biig\Component\Elasticsearch\Mapping\IndexBuilder;
 use Elastica\Client;
 use Symfony\Component\Config\FileLocator;
@@ -9,9 +11,12 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
 
 class ElasticsearchExtension extends Extension
 {
+    const INDEX_TAG = 'biig_elasticsearch.index';
+
     public function load(array $configs, ContainerBuilder $container)
     {
         $loader = new YamlFileLoader(
@@ -25,6 +30,9 @@ class ElasticsearchExtension extends Extension
 
         $this->configureElasticaClient($container, $config['connections']);
         $this->setMappingFolders($container, $config['mapping']);
+
+        $container->getDefinition(HydratorFactory::class)->setArgument(0, new Reference($config['serializer']));
+        $container->registerForAutoconfiguration(IndexInterface::class)->addTag(self::INDEX_TAG);
     }
 
     private function configureElasticaClient(ContainerBuilder $container, array $config)

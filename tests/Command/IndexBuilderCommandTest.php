@@ -1,6 +1,6 @@
 <?php
 
-namespace Biig\Component\Elasticsearch\Test\Mapping;
+namespace Biig\Component\Elasticsearch\Test\Command;
 
 use Biig\Component\Elasticsearch\Command\IndexBuilderCommand;
 use Biig\Component\Elasticsearch\Mapping\IndexBuilder;

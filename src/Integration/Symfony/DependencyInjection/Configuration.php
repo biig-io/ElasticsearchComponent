@@ -28,6 +28,7 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue([])
                     ->scalarPrototype()->end()
                 ->end()
+                ->scalarNode('serializer')->defaultValue('serializer')->end()
             ->end()
         ;
 

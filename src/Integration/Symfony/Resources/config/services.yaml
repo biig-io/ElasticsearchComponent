@@ -2,9 +2,16 @@ services:
     _defaults:
         autowire: true
         public: false
+        autoconfigure: true
 
     Biig\Component\Elasticsearch\Mapping\IndexBuilder: ~
 
+    Biig\Component\Elasticsearch\Indexation\Hydrator\HydratorFactory: ~
+
     Biig\Component\Elasticsearch\Command\IndexBuilderCommand:
+        tags:
+            - { name: 'console.command' }
+
+    Biig\Component\Elasticsearch\Command\ResetElasticCommand:
         tags:
             - { name: 'console.command' }
