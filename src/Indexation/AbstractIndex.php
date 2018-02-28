@@ -21,7 +21,7 @@ abstract class AbstractIndex implements IndexInterface
     /**
      * @var Client
      */
-    private $client;
+    protected $client;
 
     /**
      * @var LoggerInterface
