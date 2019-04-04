@@ -1,7 +1,7 @@
 BiiG Elasticsearch component
 ============================
 
-[![Build Status](https://travis-ci.org/biig-io/ElasticsearhComponent.svg?branch=master)](https://travis-ci.org/biig-io/ElasticsearhComponent)
+[![Build Status](https://travis-ci.org/biig-io/ElasticsearchComponent.svg?branch=master)](https://travis-ci.org/biig-io/ElasticsearchComponent)
 
 This library is designed to give you some set of classes you define almost all the time if you use Elastica. This is
 based on Elastica and do not much for you except standard behavior.
