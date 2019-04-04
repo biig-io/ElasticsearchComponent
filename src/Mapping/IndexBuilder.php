@@ -34,11 +34,11 @@ class IndexBuilder
     /**
      * Create the indexes inside elasticsearch based on the given mapping files.
      *
-     * @param string $index Specify this argument if you want to build only 1 specific
+     * @param string $indexName Specify this argument if you want to build only 1 specific
      *
      * @return string[]
      */
-    public function create(string $index = null)
+    public function create(string $indexName = null)
     {
         $finder = new Finder();
         $finder->in($this->mappingFolders);
@@ -48,7 +48,7 @@ class IndexBuilder
         foreach ($finder as $file) {
             $indexToCreate = $file->getBasename('.yaml');
 
-            if (null !== $index && $indexToCreate !== $index) {
+            if (null !== $indexName && $indexToCreate !== $indexName) {
                 continue;
             }
 
