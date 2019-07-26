@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.2] - 2019-07-26
+### Added
+- Add full Elastica client configuration, #6 fixes it
+
 ## [1.1.2] - 2019-04-04
 ### Fixed
 - Multiple mapping files feature was not working, #4 fixes it
