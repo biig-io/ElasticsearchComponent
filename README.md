@@ -1,5 +1,5 @@
-BiiG Elasticsearch component
-============================
+Biig° Elasticsearch component
+=============================
 
 [![Build Status](https://travis-ci.org/biig-io/ElasticsearchComponent.svg?branch=master)](https://travis-ci.org/biig-io/ElasticsearchComponent)
 
