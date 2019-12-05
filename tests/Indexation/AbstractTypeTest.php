@@ -2,6 +2,8 @@
 
 namespace Biig\Component\Elasticsearch\Test\Indexation;
 
+use Biig\Component\Elasticsearch\Exception\IndexationError;
+use Biig\Component\Elasticsearch\Exception\NoElasticaTypeAvailable;
 use Biig\Component\Elasticsearch\Indexation\AbstractIndex;
 use Biig\Component\Elasticsearch\Indexation\AbstractType;
 use Biig\Component\Elasticsearch\Indexation\Doctrine\SimplePaginator;
@@ -9,11 +11,14 @@ use Biig\Component\Elasticsearch\Indexation\Hydrator\Hydrator;
 use Biig\Component\Elasticsearch\Indexation\Hydrator\HydratorFactory;
 use Biig\Component\Elasticsearch\Indexation\IndexInterface;
 use Biig\Component\Elasticsearch\Mapping\IndexBuilder;
+use Elastica\Bulk\ResponseSet;
 use Elastica\Client;
+use Elastica\Document;
 use Elastica\Exception\ElasticsearchException;
 use Elastica\Exception\ResponseException;
 use Elastica\Index;
 use Elastica\Response;
+use Elastica\SearchableInterface;
 use Elastica\Type;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -50,10 +55,70 @@ class AbstractTypeTest extends TestCase
         $fooType->update(new \stdClass(), 'foo');
     }
 
+    public function testItFlushes()
+    {
+        $type = $this->prophesize(Type::class);
+        $index = $this->prophesize(Index::class);
+        $responseSet = $this->prophesize(ResponseSet::class);
+
+        $fooType = new FooType($this->logger->reveal());
+        $fooType->setType($type->reveal());
+        $fooType->stageForInsert(['object1'], 1);
+        $fooType->stageForInsert(['object2'], 2);
+
+        $responseSet->hasError()->willReturn(false);
+        $type->addDocuments([
+            new Document(1, ['object1']),
+            new Document(2, ['object2'])
+        ])->shouldBeCalled()->willReturn($responseSet);
+
+        $type->getIndex()->willReturn($index);
+        $index->refresh()->shouldBeCalled();
+
+        $fooType->flush();
+
+        $this->assertEquals([], $fooType->getStageForInsert());
+    }
+
+    public function testItThrowsExceptionIfNoType()
+    {
+        $fooType = new FooType($this->logger->reveal());
+
+        $this->expectException(NoElasticaTypeAvailable::class);
+        $fooType->flush();
+    }
+
+    public function testItThrowsExceptionOnIndexationError()
+    {
+        $type = $this->prophesize(Type::class);
+        $responseSet = $this->prophesize(ResponseSet::class);
+
+        $fooType = new FooType($this->logger->reveal());
+        $fooType->setType($type->reveal());
+        $fooType->stageForInsert(['object1'], 1);
+        $fooType->stageForInsert(['object2'], 2);
+
+        $responseSet->hasError()->willReturn(true);
+        $type->addDocuments([
+            new Document(1, ['object1']),
+            new Document(2, ['object2'])
+        ])->shouldBeCalled()->willReturn($responseSet);
+        $responseSet->getError()->willReturn('error');
+
+        $this->expectException(IndexationError::class);
+
+        $fooType->flush();
+    }
+
 }
 
 class FooType extends AbstractType
 {
+    /**
+     * @var array
+     */
+    private $stagedForInsert = [];
+
     public function getPaginator(): SimplePaginator
     {
     }
@@ -61,5 +126,10 @@ class FooType extends AbstractType
     public function getName(): string
     {
         return 'bar';
+    }
+
+    public function getStageForInsert()
+    {
+        return $this->stagedForInsert;
     }
 }
