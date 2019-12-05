@@ -3,7 +3,6 @@
 namespace Biig\Component\Elasticsearch\Indexation;
 
 use Biig\Component\Elasticsearch\Exception\DocumentNotFoundException;
-use Biig\Component\Elasticsearch\Exception\IndexationError;
 use Biig\Component\Elasticsearch\Exception\NoElasticaTypeAvailable;
 use Biig\Component\Elasticsearch\Indexation\Doctrine\SimplePaginator;
 use Elastica\Document;
@@ -82,7 +81,7 @@ abstract class AbstractType implements TypeInterface
         if (!empty($this->stagedForInsert)) {
             $response = $this->type->addDocuments($this->stagedForInsert);
             if ($response->hasError()) {
-                throw new IndexationError($response->getError());
+                $this->logger->error($response->getError());
             }
             $this->stagedForInsert = [];
         }

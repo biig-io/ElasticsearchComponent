@@ -2,15 +2,11 @@
 
 namespace Biig\Component\Elasticsearch\Test\Indexation;
 
-use Biig\Component\Elasticsearch\Indexation\AbstractIndex;
+use Biig\Component\Elasticsearch\Exception\NoElasticaTypeAvailable;
 use Biig\Component\Elasticsearch\Indexation\AbstractType;
 use Biig\Component\Elasticsearch\Indexation\Doctrine\SimplePaginator;
-use Biig\Component\Elasticsearch\Indexation\Hydrator\Hydrator;
-use Biig\Component\Elasticsearch\Indexation\Hydrator\HydratorFactory;
-use Biig\Component\Elasticsearch\Indexation\IndexInterface;
-use Biig\Component\Elasticsearch\Mapping\IndexBuilder;
-use Elastica\Client;
-use Elastica\Exception\ElasticsearchException;
+use Elastica\Bulk\ResponseSet;
+use Elastica\Document;
 use Elastica\Exception\ResponseException;
 use Elastica\Index;
 use Elastica\Response;
@@ -48,6 +44,82 @@ class AbstractTypeTest extends TestCase
         $type->updateDocument(Argument::any())->willThrow($exception->reveal());
 
         $fooType->update(new \stdClass(), 'foo');
+    }
+
+    public function testItFlushes()
+    {
+        $type = $this->prophesize(Type::class);
+        $index = $this->prophesize(Index::class);
+        $responseSet = $this->prophesize(ResponseSet::class);
+
+        $fooType = new FooType($this->logger->reveal());
+        $fooType->setType($type->reveal());
+        $fooType->stageForInsert(['object1'], 1);
+        $fooType->stageForInsert(['object2'], 2);
+
+        $documents = [
+            new Document(1, ['object1']),
+            new Document(2, ['object2']),
+        ];
+
+        $responseSet->hasError()->willReturn(false);
+        $type->addDocuments($documents)->shouldBeCalledOnce()->willReturn($responseSet);
+
+        $type->getIndex()->willReturn($index);
+        $index->refresh()->shouldBeCalled();
+
+        $fooType->flush();
+        $fooType->flush();
+    }
+
+    public function testItDoesNotAddDocumentIfNoneStaged()
+    {
+        $type = $this->prophesize(Type::class);
+        $index = $this->prophesize(Index::class);
+
+        $fooType = new FooType($this->logger->reveal());
+        $fooType->setType($type->reveal());
+
+        $type->addDocuments()->shouldNotBeCalled();
+
+        $type->getIndex()->willReturn($index);
+        $index->refresh()->shouldBeCalled();
+
+        $fooType->flush();
+    }
+
+    public function testItThrowsExceptionIfNoType()
+    {
+        $fooType = new FooType($this->logger->reveal());
+
+        $this->expectException(NoElasticaTypeAvailable::class);
+        $fooType->flush();
+    }
+
+    public function testItLogsErrorOnIndexationError()
+    {
+        $type = $this->prophesize(Type::class);
+        $index = $this->prophesize(Index::class);
+        $responseSet = $this->prophesize(ResponseSet::class);
+
+        $fooType = new FooType($this->logger->reveal());
+        $fooType->setType($type->reveal());
+        $fooType->stageForInsert(['object1'], 1);
+        $fooType->stageForInsert(['object2'], 2);
+
+        $responseSet->hasError()->willReturn(true);
+        $type->addDocuments([
+            new Document(1, ['object1']),
+            new Document(2, ['object2']),
+        ])->shouldBeCalled()->willReturn($responseSet);
+        $responseSet->getError()->willReturn('error');
+
+        $this->logger->error('error')->shouldBeCalled();
+
+        $type->getIndex()->willReturn($index);
+        $index->refresh()->shouldBeCalled();
+
+        $fooType->flush();
     }
 
 }
